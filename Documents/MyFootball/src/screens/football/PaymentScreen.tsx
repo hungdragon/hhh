@@ -21,7 +21,7 @@ const PaymentScreen: React.FC<{navigation: any; route: any}> = ({
   route,
 }) => {
   const [currentDate, setCurrentDate] = useState('');
-  const {ID_next,price,time} = route.params;
+  const {ID_next,price,time,nameCustomera} = route.params;
   const [data, setData] = React.useState('');
   // const aa=id;
    const namePitch=useSelector((state: ApplicationState)=>state.footbalState.namePitch)
@@ -100,20 +100,20 @@ const PaymentScreen: React.FC<{navigation: any; route: any}> = ({
               <Text style={styles.body_body_text}>Tiền sân</Text>
             </View>
             <View style={styles.body_body_right}>
-              <Text style={styles.body_body_text}>Vương Văn Hưng</Text>
+              <Text style={styles.body_body_text}>{nameCustomera}</Text>
               <Text style={styles.body_body_text}>0961461262</Text>
-              <Text style={styles.body_body_text}>Hi Anh đây !</Text>
+              <Text style={styles.body_body_text}>...</Text>
               <Text
                 style={[
                   styles.body_body_text,
                   {fontWeight: 'bold', color: 'red'},
                 ]}>
-            {price}
+            {price+'.000'}
               </Text>
             </View>
           </View>
 
-          <View style={styles.service_view}>
+          {/* <View style={styles.service_view}>
             <View style={styles.service_view_left}>
               <Text style={styles.body_body_text}>
                 Cho thuê bóng 25.000đ/lượt
@@ -132,7 +132,7 @@ const PaymentScreen: React.FC<{navigation: any; route: any}> = ({
                 </View>
               </View>
             </View>
-          </View>
+          </View> */}
 
           <View style={styles.footer_view}>
             <View style={styles.footer_wrap}>
@@ -145,7 +145,7 @@ const PaymentScreen: React.FC<{navigation: any; route: any}> = ({
       <View style={styles.payment_view}>
         <View style={styles.payment_view_left}>
           <Text>Tổng thanh toán</Text>
-          <Text style={{fontWeight: 'bold', color: 'red'}}>đ672.000</Text>
+          <Text style={{fontWeight: 'bold', color: 'red'}}>đ   {price+'.000'}</Text>
         </View>
         <View style={styles.payment_view_right}>
           <TouchableOpacity onPress={() => back()}>

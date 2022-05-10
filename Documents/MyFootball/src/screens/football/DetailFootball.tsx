@@ -10,13 +10,14 @@ const DetailsFootball: React.FC<{navigation:any,route:any}>=({navigation,route})
     console.log('d----'+fullName);
     const [ currentDate, setCurrentDate]=useState('')
     const {id,price,time} =route.params;
+    const [nameCustomer,setNameCustomer]=useState(fullName);
     console.log(price);
     const money = price.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    const discount=15000;
+    const discount=15;
     const Total=price - discount;
     const ac:string = Total.toString();
     let a=ac.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    console.log(Total);                                            
+    console.log(Total+'.000');                                            
     const [data, setData] = React.useState('');
   
     useEffect(()=>{
@@ -31,13 +32,18 @@ const DetailsFootball: React.FC<{navigation:any,route:any}>=({navigation,route})
     },[])
     const dispatch = useDispatch();
     // nút back lại đây
+    
+    const textInputChange=(value:any)=>{
+       
+        setNameCustomer(value);
+    }
     function next(){
         //const {params} =route;
         //console.warn("check",params);
        // alert({params})
        // params.callback();//gọi  hàm callback
        //const aa= navigation.navigate('Sân 7',{screen:'HomeBooking',hung:id,});// truyền lại về View A
-       const aa= navigation.navigate("PaymentScreen",{ID_next:id,price:a,time:time});// truyền lại về View A
+       const aa= navigation.navigate("PaymentScreen",{ID_next:id,price:a,time:time,nameCustomera:nameCustomer});// truyền lại về View A
        
        
         // const {goBack}=navigation;
@@ -72,7 +78,7 @@ const DetailsFootball: React.FC<{navigation:any,route:any}>=({navigation,route})
                     <View style={{flexDirection:'column'}}>
                        <View style={styles.input_info}>
                             <Text style={{paddingVertical:10}}><IconAntDesign name="user"/></Text>
-                            <TextInput placeholder='Nhap ten'>{fullName}</TextInput> 
+                            <TextInput    onChangeText={val => textInputChange(val)} placeholder='Nhap ten' >{fullName}</TextInput> 
                        </View>
                        <View style={styles.input_info}>
                             <Text style={{paddingVertical:10}}><IconFontAwesome name="phone"/></Text>
@@ -95,7 +101,7 @@ const DetailsFootball: React.FC<{navigation:any,route:any}>=({navigation,route})
                             </View>
                             <View style={styles.input_info_2_1}>
                                 <Text style={styles.input_info_2_0}>Tổng tiền</Text>
-                                <Text style={styles.input_info_2_3} >{a}</Text>
+                                <Text style={styles.input_info_2_3} >{a}.000</Text>
                             </View>
                         </View>
                     </View>

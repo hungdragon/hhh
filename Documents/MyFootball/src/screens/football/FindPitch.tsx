@@ -30,6 +30,8 @@ import Geolocation from "react-native-geolocation-service";
 
 import * as Location from "expo-location";
 import { getDistance, getPreciseDistance } from "geolib";
+import LoadingApp from "src/components/LoadingApp";
+import { setNamePitch } from "./Booking-Football/FootballSlice";
 interface Props {
   navigation: any;
   route: any;
@@ -51,8 +53,9 @@ const FindPitch: React.FC<Props> = ({ navigation }) => {
   const [currentLong, setCurrentLong] = useState("...");
   const [currentLat, setCurrentLat] = useState("...");
   const [locationStatus, setLocationStatus] = useState("");
+  const [loading,setLoading]=useState(false);
   useEffect(() => {
-    //callAPI();
+    callAPI();
   }, []);
 
   useMemo(() => {
@@ -66,20 +69,24 @@ const FindPitch: React.FC<Props> = ({ navigation }) => {
       });
       setDataFilter(newData);
     } else {
-      // dispatch(setDataFind(data));
+     // callAPI();
+       dispatch(setDataFind(data));
     }
   }, [nameSearchPitch]);
 
   const onRefresh = React.useCallback(() => {
+    setGpsActive(true);
     setRefreshing(true);
     wait(2000).then(() => setRefreshing(false));
     callAPI();
   }, []);
   const callAPI = async () => {
+    setLoading(true);
     const response = await axios.get(`${BASE_URL}api/football-pitch-ad`, {
       timeout: 10 * 1000,
     });
     dispatch(setDataFind(response.data.data));
+    setLoading(false)
   };
   const renderItem = ({ item }: any) => {
     const base64Image = `data:image/png;base64,${item.image}`;
@@ -88,6 +95,7 @@ const FindPitch: React.FC<Props> = ({ navigation }) => {
         // style={{ backgroundColor: 'rgba(0, 0, 0, .5)',zIndex:9999}}
         onPress={() => {
           navigation.navigate("PitchInfoScreen");
+          dispatch(setNamePitch(item?.pitchName))
         }}
       >
         <ImageBackground
@@ -97,16 +105,20 @@ const FindPitch: React.FC<Props> = ({ navigation }) => {
         >
           <View style={styles.time_block}>
             <Text style={styles.text_time}>{item?.fullTimeSlot}</Text>
-            <Text
-              style={{
-                height: 35,
-                backgroundColor: "#fff",
-                padding: 7,
-                borderRadius: 5,
-              }}
-            >
-              <Text style={{ fontWeight: "bold" }}>{'0.1'}</Text> km
-            </Text>
+
+            {item.km == null || undefined ? null : (
+              <Text
+                style={{
+                  height: 35,
+                  backgroundColor: "#fff",
+                  padding: 7,
+                  borderRadius: 5,
+                }}
+              >
+                {" "}
+                <Text style={{ fontWeight: "bold" }}>{item.km}</Text> km{" "}
+              </Text>
+            )}
           </View>
           <View style={styles.address_block}>
             <View style={styles.address_left}>
@@ -162,38 +174,63 @@ const FindPitch: React.FC<Props> = ({ navigation }) => {
       </TouchableOpacity>
     );
   };
-
+  const [gpsActive,setGpsActive]=useState(true);
   const nearestSearch = async () => {
-    // let { status } = await Permissions.askAsync(Permissions.LOCATION_BACKGROUND);
-    // if (status !== 'granted') {
-    //    Alert.alert('khong co quyen')
-    // }
-    let km=0;
-    let location = await Location.getCurrentPositionAsync({});
-    setCurrentLat(JSON.stringify(location.coords.latitude));
-    setCurrentLong(JSON.stringify(location.coords.longitude));
- 
-    // const calculatePreciseDistance = () => {
-    //   var pdis = getDistance(
-    //     { latitude: currentLat, longitude: currentLong },
-    //     { latitude: 21.029589601988146, longitude:  105.85253991652326 }
-    //   );
-    //   const km = pdis / 1000;
-    //   Alert.alert("aaa"+Math.round(km));
-    // };
-      let dataFilter = _.filter(data, (o: any) => {
-        let aa= getDistance(
-          { latitude: o.latitude, longitude: o.longitude },
-          { latitude: 21.029589601988146, longitude:  105.85253991652326 }
-        )
-        km = aa / 1000;
-       //  Alert.alert("aaa"+Math.round(km));
-        // const km=aa/1000;
-         return km<10;
+    setLoading(true);
+    setGpsActive(!gpsActive);
+    if(gpsActive){
+      console.log(gpsActive);
+      // let { status } = await Permissions.askAsync(Permissions.LOCATION_BACKGROUND);
+      // if (status !== 'granted') {
+      //    Alert.alert('khong co quyen')
+      // }
+      let km = 0;
+      let location = await Location.getCurrentPositionAsync({});
+      setCurrentLat(JSON.stringify(location.coords.latitude));
+      setCurrentLong(JSON.stringify(location.coords.longitude));
   
+      // const calculatePreciseDistance = () => {
+      //   var pdis = getDistance(
+      //     { latitude: currentLat, longitude: currentLong },
+      //     { latitude: 21.029589601988146, longitude:  105.85253991652326 }
+      //   );
+      //   const km = pdis / 1000;
+      //   Alert.alert("aaa"+Math.round(km));
+      // };
+      let dataFilter = _.filter(data, (o: any) => {
+       
+        let aa = getDistance(
+          { latitude: o.latitude, longitude: o.longitude },
+          { latitude: 21.029589601988146, longitude: 105.85253991652326 }
+        );
+        km = aa / 1000;
+        //  Alert.alert("aaa"+Math.round(km));
+        // const km=aa/1000;
+  
+        return km < 10;
       });
-   dispatch(setDataFind(dataFilter));
+      let dataConvert = dataFilter.map((item: any): any => {
+        let aa = getDistance(
+          { latitude: item.latitude, longitude: item.longitude },
+          { latitude: 21.029589601988146, longitude: 105.85253991652326 }
+        );
+        km = Math.round(aa / 1000*100)/100;
+        return { km: km, ...item };
+      });
+      console.log("71--", JSON.stringify(dataConvert));
+      dispatch(setDataFind(dataConvert));
+      setLoading(false);
+    }else{
+      callAPI();
+    }
   };
+  const EmptyComponent=()=>{
+    return(
+      <View style={{flex:1,justifyContent: 'center',alignItems: 'center'}}>
+      <Text>{'Khong tim thay'}</Text>
+      </View>
+    )
+  }
   return (
     <View style={styles.container}>
       <StatusBar
@@ -214,7 +251,7 @@ const FindPitch: React.FC<Props> = ({ navigation }) => {
           <Text
             onPress={() => {
               navigation.navigate("SearchPitch");
-             //Alert.alert("Search")
+              //Alert.alert("Search")
             }}
             style={{ width: "100%", paddingVertical: 5 }}
           >
@@ -225,14 +262,13 @@ const FindPitch: React.FC<Props> = ({ navigation }) => {
           <TouchableOpacity
             onPress={() => {
               nearestSearch();
-             // calculatePreciseDistance();
-              
+              // calculatePreciseDistance();
             }}
           >
             <MaterialIcon
               name="crosshairs-gps"
               size={25}
-              style={{ marginBottom: 6 }}
+              style={[{ marginBottom: 6 },!gpsActive?{color: 'blue'}:{color: 'black'}]}
             />
           </TouchableOpacity>
         </View>
@@ -242,25 +278,29 @@ const FindPitch: React.FC<Props> = ({ navigation }) => {
         <View style={{ marginVertical: 10, marginHorizontal: 10 }}>
           <Text>Kết quả</Text>
         </View>
-        {!nameSearchPitch ? (
-          <FlatList
-            data={data}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            {
+              loading?(<LoadingApp/>):(  !nameSearchPitch ? (
+                <FlatList
+                  data={data}
+                  renderItem={renderItem}
+                  ListEmptyComponent={EmptyComponent}
+                  keyExtractor={(item) => item.id}
+                  refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                  }
+                />
+              ) : (
+                <FlatList
+                  data={dataFilter}
+                  renderItem={renderItem}
+                  ListEmptyComponent={EmptyComponent}
+                  keyExtractor={(item) => item.id}
+                  refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                  }
+                />
+              ))
             }
-          />
-        ) : (
-          <FlatList
-            data={dataFilter}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-          />
-        )}
       </View>
     </View>
   );

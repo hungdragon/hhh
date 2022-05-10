@@ -343,7 +343,7 @@ const PitchInfoScreen: React.FC<{ navigation: any }> = ({navigation}:any) => {
 
       <View style={styles.btn_BookingPosotion}>
         <TouchableOpacity style={styles.btn} 
-        onPress={()=>{ dispatch(setNamePitch(InfomationPitchData.name_pitch))
+        onPress={()=>{ 
           navigation.navigate('BookFootballPitch',{namePitch:InfomationPitchData.name_pitch})}}>
           <Text style={styles.textBooking}>Đặt sân ngay</Text>
         </TouchableOpacity>

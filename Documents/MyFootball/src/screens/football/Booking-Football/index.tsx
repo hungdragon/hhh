@@ -84,6 +84,7 @@ const BookFootballPitch: React.FC<Props> = ({ navigation, route }) => {
     } else {
       setDays(moment(days).add(1, "days"));
       // console.log(days.format("LLL"));
+      dispatch(setTimeBooking(days.locale("vi").format("LLL")));
       const dayF = moment(days).add(1, "days").format("DD");
       const dayM = days.format("MM");
       const dayCode = dayF + dayM;
